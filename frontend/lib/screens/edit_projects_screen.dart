@@ -1,7 +1,4 @@
-import 'dart:ffi';
-
 import 'package:assignment_12/core/app_export.dart';
-import 'package:assignment_12/models/portfolio_model.dart';
 import 'package:assignment_12/providers/portfolio_provider.dart';
 
 class EditProjectsScreen extends StatelessWidget {

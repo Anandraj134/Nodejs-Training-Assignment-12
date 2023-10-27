@@ -1,6 +1,5 @@
 import 'package:assignment_12/core/app_export.dart';
 import 'package:assignment_12/models/contact_form_model.dart';
-import 'package:assignment_12/providers/user_provider.dart';
 
 class ContactFormProvider with ChangeNotifier {
   final GlobalKey<FormState> contactFormKey = GlobalKey<FormState>();
