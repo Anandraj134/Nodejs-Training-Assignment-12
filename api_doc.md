@@ -6,7 +6,7 @@ This documentation provides details about the endpoints and operations for the A
 
 1. [User Authentication](#user-authentication)
    - [Signup (POST)](#signup-post)
-   - [Login (GET)](#login-get)
+   - [Login (POST)](#login-post)
 2. [Blogs](#blogs)
    - [Get All Blogs (GET)](#get-all-blogs-get)
    - [Add New Blog (POST)](#add-new-blog-post)
@@ -47,7 +47,7 @@ Create a new user account.
 }
 ```
 
-### Login (GET)
+### Login (POST)
 
 - User login.
 
@@ -114,7 +114,7 @@ Endpoint: `/auth`
 }
 ```
 
-### Delete Blog
+### Delete Blog (DELETE)
 
 **Endpoint:** `/blog/:id`
 

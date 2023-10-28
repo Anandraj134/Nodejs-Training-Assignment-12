@@ -38,19 +38,16 @@ class SignupProvider with ChangeNotifier {
       email: emailController.text,
       password: passwordController.text,
     );
-    try {
-      Response response = await Dio().post(
-        "$baseUrl/$authApiRoute",
-        data: signupModel.toJson(),
-      );
-      if (response.data["success"]) {
-        authToken = "Bearer ${response.data["token"]}";
+    dioPostRequest(
+      url: "$baseUrl/$signupApiRoute",
+      data: signupModel.toJson(),
+      successCallback: (responseData) {
+        authToken = "Bearer ${responseData["token"]}";
         writeStorage(storageAuthToken, authToken);
-        currentUserDetails = UserModel.fromJson(
-          response.data["data"],
-        );
-        writeStorage(storageUserId, currentUserDetails.id.toString());
-        if (!context.mounted) return;
+        Provider.of<UserProfileProvider>(context).currentUserDetails =
+            UserModel.fromJson(responseData["data"]);
+        writeStorage(storageUserId,
+            Provider.of<UserProfileProvider>(context, listen: false).userId.toString());
         Provider.of<UserProvider>(context, listen: false)
             .fetchUser(context: context);
         context.pushReplacementNamed("portfolio");
@@ -58,18 +55,12 @@ class SignupProvider with ChangeNotifier {
         emailController.clear();
         passwordController.clear();
         usernameController.clear();
-      } else {
-        if (!context.mounted) return;
-        customToastMessage(context: context, desc: response.data["data"]);
-      }
-    } on DioException catch (error) {
-      signupToggle();
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.response?.data["data"]);
-    } catch (error) {
-      signupToggle();
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.toString());
-    }
+      },
+      errorCallback: (errorDesc) {
+        customToastMessage(context: context, desc: errorDesc);
+        signupToggle();
+      },
+      contextMounted: context.mounted,
+    );
   }
 }

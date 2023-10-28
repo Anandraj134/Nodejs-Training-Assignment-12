@@ -63,7 +63,7 @@ class BlogProvider with ChangeNotifier {
       final File? image = profileImage;
 
       final String imagePath =
-          '$collectionBlogs/${currentUserDetails.id}/blogImage.jpg';
+          '$collectionBlogs/${Provider.of<UserProfileProvider>(context, listen: false).userId}/blogImage.jpg';
 
       UploadTask uploadTask = storage.ref().child(imagePath).putFile(image!);
 
@@ -78,34 +78,25 @@ class BlogProvider with ChangeNotifier {
     }
   }
 
-  Future<void> getBlogs({required BuildContext context, String category = ""}) async {
+  Future<void> getBlogs(
+      {required BuildContext context, String category = ""}) async {
     initBlogToggle();
     blogs.clear();
-    try {
-      Response response = await Dio().get(
-        "$baseUrl/$blogApiRoute/$category",
-        options: Options(
-          headers: {"Authorization": authToken},
-        ),
-      );
-      if (response.data["success"]) {
-        for (var i in response.data["data"]) {
+
+    dioGetRequest(
+      url: "$baseUrl/$blogApiRoute/$category",
+      successCallback: (responseData) {
+        for (var i in responseData["data"]) {
           blogs.add(BlogModel.fromJson(i));
         }
         initBlogToggle();
-      } else {
-        if (!context.mounted) return;
-        customToastMessage(context: context, desc: response.data["data"]);
-      }
-    } on DioException catch (error) {
-      initBlogToggle();
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.response?.data["data"]);
-    } catch (error) {
-      initBlogToggle();
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.toString());
-    }
+      },
+      errorCallback: (errorDesc) {
+        customToastMessage(context: context, desc: errorDesc);
+        initBlogToggle();
+      },
+      contextMounted: context.mounted,
+    );
   }
 
   Future<void> addNewBlog({required BuildContext context}) async {
@@ -119,15 +110,10 @@ class BlogProvider with ChangeNotifier {
       imageUrl: profileURL,
       category: selectedCategory,
     );
-    try {
-      Response response = await Dio().post(
-        "$baseUrl/$blogApiRoute",
-        data: addBlogModel.toJson(),
-        options: Options(
-          headers: {"Authorization": authToken},
-        ),
-      );
-      if (response.data["success"]) {
+    dioPostRequest(
+      url: "$baseUrl/$blogApiRoute",
+      data: addBlogModel.toJson(),
+      successCallback: (responseData) {
         if (!context.mounted) return;
         customToastMessage(
           context: context,
@@ -138,20 +124,14 @@ class BlogProvider with ChangeNotifier {
         changeCurrentSelectedBlog(index: -1);
         Provider.of<BlogProvider>(context, listen: false)
             .getBlogs(context: context);
-      } else {
-        if (!context.mounted) return;
-        customToastMessage(context: context, desc: response.data["data"]);
-      }
-      addBlogToggle();
-    } on DioException catch (error) {
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.response?.data["data"]);
-      addBlogToggle();
-    } catch (error) {
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.toString());
-      addBlogToggle();
-    }
+        addBlogToggle();
+      },
+      errorCallback: (errorDesc) {
+        customToastMessage(context: context, desc: errorDesc);
+        addBlogToggle();
+      },
+      contextMounted: context.mounted,
+    );
   }
 
   Future<void> updateBlog({
@@ -168,16 +148,11 @@ class BlogProvider with ChangeNotifier {
       imageUrl: profileURL,
       category: selectedCategory,
     );
-    try {
-      Response response = await Dio().put(
-        "$baseUrl/$blogApiRoute/${id.toString()}",
-        data: addBlogModel.toJson(),
-        options: Options(
-          headers: {"Authorization": authToken},
-        ),
-      );
-      if (response.data["success"]) {
-        if (!context.mounted) return;
+
+    dioPutRequest(
+      url: "$baseUrl/$blogApiRoute/${id.toString()}",
+      data: addBlogModel.toJson(),
+      successCallback: (responseData) {
         customToastMessage(
           context: context,
           desc: "Blog Updated Successfully",
@@ -187,51 +162,35 @@ class BlogProvider with ChangeNotifier {
         changeCurrentSelectedBlog(index: -1);
         Provider.of<BlogProvider>(context, listen: false)
             .getBlogs(context: context);
-      } else {
-        if (!context.mounted) return;
-        customToastMessage(context: context, desc: response.data["data"]);
-      }
-      addBlogToggle();
-    } on DioException catch (error) {
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.response?.data["data"]);
-      addBlogToggle();
-    } catch (error) {
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.toString());
-      addBlogToggle();
-    }
+        addBlogToggle();
+      },
+      errorCallback: (errorDesc) {
+        customToastMessage(context: context, desc: errorDesc);
+        addBlogToggle();
+      },
+      contextMounted: context.mounted,
+    );
   }
 
   Future<void> deleteBlog(
       {required BuildContext context, required int index}) async {
-    try {
-      Response response = await Dio().delete(
-        "$baseUrl/$blogApiRoute/${blogs[index].id}",
-        options: Options(
-          headers: {"Authorization": authToken},
-        ),
-      );
-      if (response.data["success"]) {
+    dioDeleteRequest(
+      url: "$baseUrl/$blogApiRoute/${blogs[index].id}",
+      successCallback: (responseData) {
         if (!context.mounted) return;
         customToastMessage(
           context: context,
-          desc: response.data["data"],
+          desc: responseData["data"],
           isSuccess: true,
         );
         blogs.removeAt(index);
         notifyListeners();
-      } else {
-        if (!context.mounted) return;
-        customToastMessage(context: context, desc: response.data["data"]);
-      }
-    } on DioException catch (error) {
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.response?.data["data"]);
-    } catch (error) {
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.toString());
-    }
+      },
+      errorCallback: (errorDesc) {
+        customToastMessage(context: context, desc: errorDesc);
+      },
+      contextMounted: context.mounted,
+    );
   }
 
   void clearAddBlog() {

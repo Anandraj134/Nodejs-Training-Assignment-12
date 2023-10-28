@@ -1,11 +1,14 @@
 import 'package:assignment_12/core/app_export.dart';
 import 'package:assignment_12/providers/portfolio_provider.dart';
+import 'package:assignment_12/providers/profile_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final currentUserProvider = Provider.of<UserProfileProvider>(context);
+
     return Scaffold(
       backgroundColor: WhiteColor.white,
       appBar: AppBar(
@@ -55,12 +58,12 @@ class ProfileScreen extends StatelessWidget {
                     Container(
                       decoration: AppDecoration.containerBoxDecoration(),
                       child: customImageView(
-                        url: currentUserDetails.profilePictureUrl ??
+                        url: currentUserProvider.profilePictureUrl ??
                             Defaults.defaultProfileImage,
                         imgHeight: getVerticalSize(120),
                         imgWidth: getHorizontalSize(120),
                         isAssetImage:
-                            currentUserDetails.profilePictureUrl == null,
+                            currentUserProvider.profilePictureUrl == null,
                       ),
                     ),
                     SizedBox(
@@ -74,20 +77,20 @@ class ProfileScreen extends StatelessWidget {
                           height: getVerticalSize(5),
                         ),
                         customText(
-                            text: currentUserDetails.username,
+                            text: currentUserProvider.username,
                             color: AppColor.primaryColor,
                             fontSize: getFontSize(25),
                             fontWeight: FontWeight.bold),
                         customText(
-                            text: currentUserDetails.email,
+                            text: currentUserProvider.email,
                             color: GrayColor.gray,
                             fontSize: getFontSize(20),
                             fontWeight: FontWeight.bold),
-                        if (currentUserDetails.contactDetails?.isNotEmpty ??
+                        if (currentUserProvider.contactDetails?.isNotEmpty ??
                             false)
                           customText(
                               text: formatPhoneNumber(
-                                currentUserDetails.contactDetails ?? "",
+                                currentUserProvider.contactDetails ?? "",
                               ),
                               color: GrayColor.gray,
                               fontSize: getFontSize(20),
@@ -101,6 +104,8 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 ListTile(
                   onTap: () {
+                    Provider.of<ProfileProvider>(context, listen: false)
+                        .onEdit(context: context);
                     context.pushNamed("edit_profile");
                   },
                   title: customText(
@@ -124,7 +129,7 @@ class ProfileScreen extends StatelessWidget {
                     Provider.of<PortfolioProvider>(context, listen: false)
                         .getUserPortfolios(
                       context: context,
-                      uid: currentUserDetails.id.toString(),
+                      uid: currentUserProvider.userId.toString(),
                     );
                     context.pushNamed("edit_projects");
                   },

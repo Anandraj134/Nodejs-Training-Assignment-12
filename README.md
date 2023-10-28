@@ -97,10 +97,10 @@ npm start
 
 #### Authentication:
 
-| Method | End Point | Description | Auth Token Required |
-| :----: | :-------: | :---------: | :-----------------: |
-|  POST  |   auth/   |   Signup    |                     |
-|  GET   |   auth/   |    Login    |                     |
+| Method |  End Point  | Description | Auth Token Required |
+| :----: | :---------: | :---------: | :-----------------: |
+|  POST  | auth/signup |   Signup    |                     |
+|  POST  | auth/login  |    Login    |                     |
 
 #### Blogs:
 
@@ -191,7 +191,7 @@ flutter run
 
 ### Features
 
-- **User-Friendly Interface:**  Animate transitions and interactions for a visually appealing and engaging user interface.
+- **User-Friendly Interface:** Animate transitions and interactions for a visually appealing and engaging user interface.
 - **Portfolio Showcase:** Present your projects elegantly, allowing visitors to explore your work effortlessly.
 - **Dynamic Blogging:** Create and manage blog posts with rich formatting options, enhancing content quality.
 - **Responsive Design:** Ensure a consistent and attractive experience on various devices.
@@ -246,8 +246,8 @@ flutter run
 
 <img src="screenshots/database_schema.png" width="231" height="500" align="center">
 
-
 ## Application Demo
+
 ```
 https://drive.google.com/drive/folders/1d98ffRdns_cYCYA9IVwba3d_-wF6jcBH?usp=sharing
 ```

@@ -1,23 +1,23 @@
 const nodemailer = require("nodemailer");
 
 exports.sendMail = async (req, res) => {
-  const { title, description, senderName, receiverName, receiverEmail } = req.body;
-  let mailTransporter = nodemailer.createTransport({
-    service: "gmail",
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-      user: process.env.USER_EMAIL,
-      pass: process.env.USER_PASSWORD,
-    },
-  });
+  const { title, description, senderName, receiverName, receiverEmail } =
+    req.body;
+  try {
+    let transporter = nodemailer.createTransport({
+      service: "gmail",
+      secure: true,
+      auth: {
+        user: process.env.USER_EMAIL,
+        pass: process.env.USER_PASSWORD,
+      },
+    });
 
-  let mailDetails = {
-    from: process.env.USER_EMAIL,
-    to: receiverEmail,
-    subject: title,
-    html: `
+    let mailOptions = {
+      from: process.env.USER_EMAIL,
+      to: receiverEmail,
+      subject: title,
+      html: `
     <!DOCTYPE html>
 <html>
 <head>
@@ -67,15 +67,13 @@ exports.sendMail = async (req, res) => {
 </body>
 </html>
     `,
-  };
+    };
 
-  mailTransporter.sendMail(mailDetails, function (err, data) {
-    if (err) {
-      console.log(err);
-      res.send({ success: false, data: "Something went wrong" });
-    } else {
-      console.log("Email sent successfully");
-      res.send({ success: true, data: "Email sent successfully" });
-    }
-  });
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully:", info.response);
+    res.status(200).json({ success: true, data: "Email sent successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, data: "Something went wrong" });
+  }
 };

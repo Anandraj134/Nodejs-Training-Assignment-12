@@ -191,7 +191,7 @@ Widget commentsBottomSheet(
     );
   }
   return SingleChildScrollView(
-    controller: commentProvider.controller,
+    controller: commentProvider.scrollController,
     child: Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,

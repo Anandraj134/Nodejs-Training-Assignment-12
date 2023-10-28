@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:assignment_12/core/app_export.dart';
 import 'package:assignment_12/models/user_model.dart';
-import 'package:assignment_12/providers/user_provider.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -49,7 +48,7 @@ class ProfileProvider with ChangeNotifier {
       final File? image = profileImage;
 
       final String imagePath =
-          '$collectionUsers/${currentUserDetails.id}/profileImage.jpg';
+          '$collectionUsers/${Provider.of<UserProfileProvider>(context, listen: false).userId}/profileImage.jpg';
 
       UploadTask uploadTask = storage.ref().child(imagePath).putFile(image!);
 
@@ -70,47 +69,56 @@ class ProfileProvider with ChangeNotifier {
     updatingProfile();
     if (profileImage != null) {
       profileURL = await uploadImage(context: context);
+      updateUserModel.profilePictureUrl = profileURL;
     }
-    updateUserModel.profilePictureUrl = profileURL;
-    try {
-      Response response = await Dio().put(
-        "$baseUrl/$userApiRoute",
-        data: updateUserModel.toJson(),
-        options: Options(
-          headers: {"Authorization": authToken},
-        ),
-      );
-      if (response.data["success"]) {
+    dioPutRequest(
+      url: "$baseUrl/$userApiRoute",
+      data: updateUserModel.toJson(),
+      successCallback: (responseData) {
+        updateProfileData(updateUserModel: updateUserModel, context: context);
         if (!context.mounted) return;
-        Provider.of<UserProvider>(context, listen: false)
-            .fetchUser(context: context);
+        context.pop();
         customToastMessage(
           context: context,
           desc: "Profile Updated Successfully",
           isSuccess: true,
         );
-        context.goNamed("portfolio");
         updatingProfile();
         onClose();
-      } else {
-        if (!context.mounted) return;
-        customToastMessage(context: context, desc: response.data["data"]);
+      },
+      errorCallback: (errorDesc) {
+        customToastMessage(context: context, desc: errorDesc);
         updatingProfile();
-      }
-    } on DioException catch (error) {
-      updatingProfile();
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.response?.data["data"]);
-    } catch (error) {
-      updatingProfile();
-      print(error.toString());
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.toString());
-    }
+      },
+      contextMounted: context.mounted,
+    );
   }
 
   void onClose() {
     profileURL = "";
     profileImage = null;
+  }
+
+  void onEdit({required BuildContext context}) {
+    contactDetailsController
+      ..text = Provider.of<UserProfileProvider>(context, listen: false)
+              .contactDetails ??
+          "";
+    bioController
+      ..text =
+          Provider.of<UserProfileProvider>(context, listen: false).bio ?? "";
+    emailController
+      ..text = Provider.of<UserProfileProvider>(context, listen: false).email;
+    usernameController
+      ..text =
+          Provider.of<UserProfileProvider>(context, listen: false).username;
+  }
+
+  void updateProfileData(
+      {required UpdateUserModel updateUserModel,
+      required BuildContext context}) {
+    Provider.of<UserProfileProvider>(context, listen: false)
+        .updateUserProfile(updateUserModel);
+    notifyListeners();
   }
 }

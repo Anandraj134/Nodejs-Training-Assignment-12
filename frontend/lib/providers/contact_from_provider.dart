@@ -9,51 +9,49 @@ class ContactFormProvider with ChangeNotifier {
   TextEditingController titleController = TextEditingController();
   TextEditingController descController = TextEditingController();
 
+  @override
+  void dispose() {
+    titleController.dispose();
+    descController.dispose();
+    super.dispose();
+  }
+
   void formSubmittingToggle() {
     isFormSubmitting = !isFormSubmitting;
     notifyListeners();
   }
 
   Future<void> submitForm(
-      {required BuildContext context, required String receiverEmail, required String receiverName}) async {
+      {required BuildContext context,
+      required String receiverEmail,
+      required String receiverName}) async {
     formSubmittingToggle();
     ContactFormModel contactFormModel = ContactFormModel(
       receiverEmail: receiverEmail,
       title: titleController.text,
       description: descController.text,
-      senderName: currentUserDetails.username,
+      senderName:
+          Provider.of<UserProfileProvider>(context, listen: false).username,
       receiverName: receiverName,
     );
-    try {
-      Response response = await Dio().post(
-        "$baseUrl/$contactFormApiRoute",
-        data: contactFormModel.toJson(),
-        options: Options(
-          headers: {"Authorization": authToken},
-        ),
-      );
-      if (response.data["success"]) {
+    dioPostRequest(
+      url: "$baseUrl/$contactFormApiRoute",
+      data: contactFormModel.toJson(),
+      successCallback: (responseData) {
         if (!context.mounted) return;
         customToastMessage(
           context: context,
-          desc: response.data["data"],
+          desc: responseData["data"],
           isSuccess: true,
         );
         titleController.clear();
         descController.clear();
-      } else {
-        if (!context.mounted) return;
-        customToastMessage(context: context, desc: response.data["data"]);
-      }
-      formSubmittingToggle();
-    } on DioException catch (error) {
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.response?.data["data"]);
-      formSubmittingToggle();
-    } catch (error) {
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.toString());
-      formSubmittingToggle();
-    }
+      },
+      errorCallback: (errorDesc) {
+        customToastMessage(context: context, desc: errorDesc);
+        formSubmittingToggle();
+      },
+      contextMounted: context.mounted,
+    );
   }
 }

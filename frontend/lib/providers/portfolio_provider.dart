@@ -7,6 +7,8 @@ class PortfolioProvider with ChangeNotifier {
   TextEditingController technologyController = TextEditingController();
   TextEditingController githubController = TextEditingController();
 
+  final GlobalKey<FormState> projectFormKey = GlobalKey<FormState>();
+
   List<PortfolioModel> portfolios = <PortfolioModel>[];
 
   bool isPortfolioFetching = false;
@@ -36,71 +38,85 @@ class PortfolioProvider with ChangeNotifier {
     portfolios.clear();
     notifyListeners();
     portfolioToggle();
-    try {
-      Response response = await Dio().get(
-        "$baseUrl/$portfolioApiRoute/$uid",
-        options: Options(
-          headers: {"Authorization": authToken},
-        ),
-      );
-      if (response.data["success"]) {
-        for (var i in response.data["data"]) {
+
+    dioGetRequest(
+      url: "$baseUrl/$portfolioApiRoute/$uid",
+      successCallback: (responseData) {
+        for (var i in responseData["data"]) {
           portfolios.add(PortfolioModel.fromJson(i));
         }
         notifyListeners();
         portfolioToggle();
-      } else {
-        if (!context.mounted) return;
-        customToastMessage(context: context, desc: response.data["data"]);
-      }
-    } on DioException catch (error) {
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.response?.data["data"]);
-      portfolioToggle();
-    } catch (error) {
-      portfolioToggle();
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.toString());
-    }
+      },
+      errorCallback: (errorDesc) {
+        customToastMessage(context: context, desc: errorDesc);
+        portfolioToggle();
+      },
+      contextMounted: context.mounted,
+    );
   }
 
   Future<void> deletePortfolio(
       {required BuildContext context, required String id}) async {
-    try {
-      Response response = await Dio().delete(
-        "$baseUrl/$portfolioApiRoute/$id",
-        options: Options(
-          headers: {"Authorization": authToken},
-        ),
-      );
-      if (response.data["success"]) {
-        if (!context.mounted) return;
+    dioDeleteRequest(
+      url: "$baseUrl/$portfolioApiRoute/$id",
+      successCallback: (responseData) {
         getUserPortfolios(
           context: context,
-          uid: currentUserDetails.id.toString(),
+          uid: Provider.of<UserProfileProvider>(context, listen: false)
+              .userId
+              .toString(),
         );
         customToastMessage(
           context: context,
           desc: "Portfolio Deleted Successfully",
           isSuccess: true,
         );
-      } else {
-        if (!context.mounted) return;
-        customToastMessage(context: context, desc: response.data["data"]);
-      }
-
-    } on DioException catch (error) {
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.response?.data["data"]);
-    } catch (error) {
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.toString());
-    }
+      },
+      errorCallback: (errorDesc) {
+        customToastMessage(context: context, desc: errorDesc);
+      },
+      contextMounted: context.mounted,
+    );
   }
 
-  Future<void> editPortfolio({
+  Future<void> addProject({
     required BuildContext context,
-    required bool isEdit,
+  }) async {
+    updatingPortfolio();
+    EditPortfolioModel editPortfolioModel = EditPortfolioModel(
+      title: titleController.text,
+      description: descriptionController.text,
+      technologiesUsed: technologyController.text,
+      githubLink: githubController.text,
+    );
+    dioPostRequest(
+      url: "$baseUrl/$portfolioApiRoute",
+      data: editPortfolioModel.toJson(),
+      successCallback: (responseData) {
+        if (!context.mounted) return;
+        getUserPortfolios(
+          context: context,
+          uid: Provider.of<UserProfileProvider>(context, listen: false)
+              .userId
+              .toString(),
+        );
+        customToastMessage(
+          context: context,
+          desc: portfolioAdded,
+          isSuccess: true,
+        );
+      },
+      errorCallback: (errorDesc) {
+        customToastMessage(context: context, desc: errorDesc);
+        updatingPortfolio();
+      },
+      contextMounted: context.mounted,
+    );
+  }
+
+  Future<void> editProject({
+    required BuildContext context,
     String id = "",
   }) async {
     updatingPortfolio();
@@ -110,55 +126,30 @@ class PortfolioProvider with ChangeNotifier {
       technologiesUsed: technologyController.text,
       githubLink: githubController.text,
     );
-    try {
-      late Response response;
-      if (isEdit) {
-        response = await Dio().put(
-          "$baseUrl/$portfolioApiRoute/$id",
-          data: editPortfolioModel.toJson(),
-          options: Options(
-            headers: {"Authorization": authToken},
-          ),
-        );
-      } else {
-        response = await Dio().post(
-          "$baseUrl/$portfolioApiRoute",
-          data: editPortfolioModel.toJson(),
-          options: Options(
-            headers: {"Authorization": authToken},
-          ),
-        );
-      }
-      if (response.data["success"]) {
-        context.pop();
+
+    dioPutRequest(
+      url: "$baseUrl/$portfolioApiRoute/$id",
+      data: editPortfolioModel.toJson(),
+      successCallback: (responseData) {
         getUserPortfolios(
           context: context,
-          uid: currentUserDetails.id.toString(),
+          uid: Provider.of<UserProfileProvider>(context, listen: false)
+              .userId
+              .toString(),
         );
-        if (isEdit) {
-          if (!context.mounted) return;
-          customToastMessage(
-              context: context, desc: portfolioUpdated, isSuccess: true);
-        } else {
-          if (!context.mounted) return;
-          customToastMessage(
-              context: context, desc: portfolioAdded, isSuccess: true);
-        }
-      } else {
-        if (!context.mounted) return;
-        customToastMessage(context: context, desc: response.data["data"]);
-      }
-      onSubmit();
-      updatingPortfolio();
-    } on DioException catch (error) {
-      updatingPortfolio();
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.response?.data["data"]);
-    } catch (error) {
-      updatingPortfolio();
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.toString());
-    }
+        customToastMessage(
+          context: context,
+          desc: portfolioUpdated,
+          isSuccess: true,
+        );
+        updatingPortfolio();
+      },
+      errorCallback: (errorDesc) {
+        updatingPortfolio();
+        customToastMessage(context: context, desc: errorDesc);
+      },
+      contextMounted: context.mounted,
+    );
   }
 
   void onSubmit() {

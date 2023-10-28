@@ -1,5 +1,6 @@
 import 'package:assignment_12/core/app_export.dart';
 import 'package:assignment_12/core/utils/permission_manager.dart';
+import 'package:assignment_12/core/utils/regx_validators.dart';
 import 'package:assignment_12/models/user_model.dart';
 import 'package:assignment_12/providers/profile_provider.dart';
 
@@ -9,6 +10,8 @@ class EditProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profileProvider = Provider.of<ProfileProvider>(context);
+    final currentUserProvider = Provider.of<UserProfileProvider>(context);
+
     return Scaffold(
       backgroundColor: WhiteColor.white,
       appBar: AppBar(
@@ -52,7 +55,7 @@ class EditProfileScreen extends StatelessWidget {
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        _buildImagePicker(profileProvider),
+                        _buildImagePicker(profileProvider, currentUserProvider),
                         Positioned(
                           bottom: -10,
                           right: -10,
@@ -85,8 +88,13 @@ class EditProfileScreen extends StatelessWidget {
                   decoration: AppDecoration.inputBoxDecorationShadow(),
                   child: TextFormField(
                     style: AppStyle.textFormFieldStyle(),
-                    controller: profileProvider.usernameController
-                      ..text = currentUserDetails.username,
+                    controller: profileProvider.usernameController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please Provider Username';
+                      }
+                      return null;
+                    },
                     decoration: AppDecoration().textInputDecorationWhite(
                       icon: Icons.person_outlined,
                       hintText: "Username",
@@ -101,8 +109,16 @@ class EditProfileScreen extends StatelessWidget {
                   decoration: AppDecoration.inputBoxDecorationShadow(),
                   child: TextFormField(
                     style: AppStyle.textFormFieldStyle(),
-                    controller: profileProvider.emailController
-                      ..text = currentUserDetails.email,
+                    controller: profileProvider.emailController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please provide an Email Address';
+                      }
+                      if (!emailValidator.hasMatch(value)) {
+                        return 'Enter Valid Email';
+                      }
+                      return null;
+                    },
                     decoration: AppDecoration().textInputDecorationWhite(
                       icon: Icons.email_outlined,
                       hintText: "Email",
@@ -117,8 +133,7 @@ class EditProfileScreen extends StatelessWidget {
                   decoration: AppDecoration.inputBoxDecorationShadow(),
                   child: TextFormField(
                     style: AppStyle.textFormFieldStyle(),
-                    controller: profileProvider.bioController
-                      ..text = currentUserDetails.bio ?? "",
+                    controller: profileProvider.bioController,
                     decoration: AppDecoration().textInputDecorationWhite(
                       icon: Icons.description_outlined,
                       hintText: "Bio",
@@ -133,13 +148,22 @@ class EditProfileScreen extends StatelessWidget {
                   decoration: AppDecoration.inputBoxDecorationShadow(),
                   child: TextFormField(
                     style: AppStyle.textFormFieldStyle(),
-                    controller: profileProvider.contactDetailsController
-                      ..text = currentUserDetails.contactDetails ?? "",
+                    keyboardType: TextInputType.number,
+                    controller: profileProvider.contactDetailsController,
                     decoration: AppDecoration().textInputDecorationWhite(
                       icon: Icons.contact_emergency_outlined,
                       hintText: "Contact",
                       lableText: "Contact",
                     ),
+                    validator: (value) {
+                      if (value?.isEmpty == 0) {
+                        return null;
+                      }
+                      if (value != 10) {
+                        return "Enter Proper Mobile Number";
+                      }
+                      return null;
+                    },
                   ),
                 ),
                 SizedBox(
@@ -152,7 +176,8 @@ class EditProfileScreen extends StatelessWidget {
                       UpdateUserModel updateUserModel = UpdateUserModel(
                         username: profileProvider.usernameController.text,
                         email: profileProvider.emailController.text,
-                        profilePictureUrl: profileProvider.profileURL,
+                        profilePictureUrl:
+                            currentUserProvider.profilePictureUrl,
                         bio: profileProvider.bioController.text,
                         contactDetails:
                             profileProvider.contactDetailsController.text,
@@ -189,7 +214,8 @@ class EditProfileScreen extends StatelessWidget {
   }
 }
 
-Widget _buildImagePicker(ProfileProvider profileProvider) {
+Widget _buildImagePicker(
+    ProfileProvider profileProvider, UserProfileProvider currentUserProvider) {
   return SizedBox(
     width: width * 0.5,
     height: height * 0.25,
@@ -207,12 +233,12 @@ Widget _buildImagePicker(ProfileProvider profileProvider) {
         child: profileProvider.profileImage != null
             ? Image.file(profileProvider.profileImage!, fit: BoxFit.cover)
             : customImageView(
-                url: currentUserDetails.profilePictureUrl ??
+                url: currentUserProvider.profilePictureUrl ??
                     Defaults.defaultProfileImage,
                 imgHeight: height * 0.25,
                 imgWidth: width * 0.5,
                 fit: BoxFit.cover,
-                isAssetImage: currentUserDetails.profilePictureUrl == null,
+                isAssetImage: currentUserProvider.profilePictureUrl == null,
               ),
       ),
     ),

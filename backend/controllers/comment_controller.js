@@ -10,25 +10,27 @@ exports.createComment = async (req, res) => {
       UserId: req.user.id,
     });
 
-    res.status(200).json({ success: true, data: comment });
+    res.status(201).json({ success: true, data: comment });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, data: "Error creating Comment." });
+    res.status(500).json({ success: false, data: "Error creating comment." });
   }
 };
 
-exports.getComment = async (req, res) => {
+exports.getCommentsForBlog = async (req, res) => {
   try {
     const BlogId = req.params.id;
-    const blogComment = await Comment.findAll({ where: { BlogId } });
-    if (!blogComment) {
+    const blogComments = await Comment.findAll({ where: { BlogId } });
+
+    if (!blogComments || blogComments.length === 0) {
       return res
         .status(200)
-        .json({ success: true, data: "Comment not found." });
+        .json({ success: false, data: "Comments not found." });
     }
-    return res.json({ success: true, data: blogComment });
+
+    res.status(200).json({ success: true, data: blogComments });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, data: "Error fetching Comment." });
+    res.status(500).json({ success: false, data: "Error fetching comments." });
   }
 };

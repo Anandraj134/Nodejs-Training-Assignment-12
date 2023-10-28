@@ -25,6 +25,9 @@ class Blogfolio extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider<UserProfileProvider>(
+          create: (context) => UserProfileProvider(),
+        ),
         ChangeNotifierProvider<UserProvider>(
           create: (context) => UserProvider(),
         ),

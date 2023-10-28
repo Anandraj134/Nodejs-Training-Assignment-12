@@ -35,18 +35,18 @@ class LoginProvider with ChangeNotifier {
       email: emailController.text,
       password: passwordController.text,
     );
-    try {
-      Response response = await Dio().get(
-        "$baseUrl/$authApiRoute",
-        data: loginModel.toJson(),
-      );
-      if (response.data["success"]) {
-        authToken = "Bearer ${response.data["token"]}";
+    dioPostRequest(
+      url: "$baseUrl/$loginApiRoute",
+      data: loginModel.toJson(),
+      successCallback: (responseData) {
+        authToken = "Bearer ${responseData["token"]}";
         writeStorage(storageAuthToken, authToken);
-        currentUserDetails = UserModel.fromJson(
-          response.data["data"],
+        Provider.of<UserProfileProvider>(context).currentUserDetails =
+            UserModel.fromJson(
+          responseData["data"],
         );
-        writeStorage(storageUserId, currentUserDetails.id.toString());
+        writeStorage(storageUserId,
+            Provider.of<UserProfileProvider>(context, listen: false).userId.toString());
         if (!context.mounted) return;
         Provider.of<UserProvider>(context, listen: false)
             .fetchUser(context: context);
@@ -54,18 +54,12 @@ class LoginProvider with ChangeNotifier {
         emailController.clear();
         passwordController.clear();
         loginToggle();
-      } else {
-        if (!context.mounted) return;
-        customToastMessage(context: context, desc: response.data["data"]);
-      }
-    } on DioException catch (error) {
-      loginToggle();
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.response?.data["data"]);
-    } catch (error) {
-      loginToggle();
-      if (!context.mounted) return;
-      customToastMessage(context: context, desc: error.toString());
-    }
+      },
+      errorCallback: (errorDesc) {
+        customToastMessage(context: context, desc: errorDesc);
+        loginToggle();
+      },
+      contextMounted: context.mounted,
+    );
   }
 }

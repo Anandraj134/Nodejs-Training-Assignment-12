@@ -19,9 +19,14 @@ app.use("/user", userTokenCheck, userRoutes);
 app.use("/blog", userTokenCheck, blogRoutes);
 app.use("/comment", userTokenCheck, commentRoutes);
 app.use("/portfolio", userTokenCheck, portfolioRoutes);
-app.use("/contact_form", contactUsRoutes);
+app.use("/contact_form", userTokenCheck, contactUsRoutes);
 
 app.listen(port, async () => {
-  sequelize.testDatabaseConnection();
-  console.log(`Server Started on ${port}`);
+  const isDatabaseConnected = await sequelize.testDatabaseConnection();
+
+  if (isDatabaseConnected) {
+    console.log(`Server started on port ${port}`);
+  } else {
+    console.error("Server couldn't start due to a database connection error.");
+  }
 });

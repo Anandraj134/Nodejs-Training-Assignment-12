@@ -10,11 +10,9 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-// Update user information
 exports.updateUser = async (req, res) => {
   try {
-    const { username, email, bio, profile_picture_url, contact_details } =
-      req.body;
+    const { username, email, bio, profile_picture_url, contact_details } = req.body;
     const userId = req.user.id;
 
     const user = await User.findByPk(userId);
@@ -31,11 +29,9 @@ exports.updateUser = async (req, res) => {
 
     await user.save();
 
-    res.json({ success: true, data: user });
+    res.status(200).json({ success: true, data: user });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: "Error updating user information." });
+    res.status(500).json({ success: false, data: "Error updating user information." });
   }
 };

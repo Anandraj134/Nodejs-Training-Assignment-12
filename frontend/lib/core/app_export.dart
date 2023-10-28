@@ -13,6 +13,7 @@ export 'package:assignment_12/core/utils/size_utils.dart';
 export 'package:assignment_12/core/utils/storage_utils.dart';
 export 'package:assignment_12/core/utils/globals.dart';
 export 'package:assignment_12/core/utils/date_number_formatter.dart';
+export 'package:assignment_12/core/utils/api_utils.dart';
 
 export 'package:assignment_12/themes/app_decoration.dart';
 export 'package:assignment_12/themes/app_style.dart';
@@ -24,3 +25,5 @@ export 'package:assignment_12/widgets/custom_image_view.dart';
 export 'package:assignment_12/widgets/custom_toast_message.dart';
 export 'package:assignment_12/widgets/custom_loading_animation.dart';
 export 'package:assignment_12/widgets/custom_bottom_navigation.dart';
+
+export 'package:assignment_12/providers/user_profile_provider.dart';

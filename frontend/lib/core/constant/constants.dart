@@ -1,6 +1,7 @@
-const String baseUrl = "http://10.1.81.6:3000";
+const String baseUrl = "http://192.168.95.217:3000";
 
-const String authApiRoute = "auth";
+const String loginApiRoute = "auth/login";
+const String signupApiRoute = "auth/signup";
 
 const String blogApiRoute = "blog";
 

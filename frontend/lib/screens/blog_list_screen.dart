@@ -7,6 +7,7 @@ class BlogScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final blogProvider = Provider.of<BlogProvider>(context);
+    final currentUserProvider = Provider.of<UserProfileProvider>(context);
     return Scaffold(
       backgroundColor: WhiteColor.white,
       appBar: AppBar(
@@ -95,150 +96,158 @@ class BlogScreen extends StatelessWidget {
         backgroundColor: WhiteColor.white,
         elevation: 0,
       ),
-      body: Consumer<BlogProvider>(
-        builder: (context, blogProvider, child) {
-          if (blogProvider.initBlogLoad) {
-            return Center(
-              child: customPageLoadingAnimation(
-                size: getSize(50),
-              ),
-            );
-          } else if (blogProvider.blogs.isEmpty) {
-            return Center(
-              child: customText(
-                text: "No Blogs Found",
-                color: AppColor.primaryColor,
-                fontSize: getFontSize(25),
-                fontWeight: FontWeight.bold,
-                maxLines: 3,
-              ),
-            );
-          } else {
-            return AnimationLimiter(
-              child: ListView.separated(
-                padding: EdgeInsets.all(
-                  getSize(20),
+      body: RefreshIndicator(
+        backgroundColor: AppColor.primaryColor,
+        color: WhiteColor.white,
+        triggerMode: RefreshIndicatorTriggerMode.anywhere,
+        onRefresh: () async {
+          blogProvider.getBlogs(context: context);
+        },
+        child: Consumer<BlogProvider>(
+          builder: (context, blogProvider, child) {
+            if (blogProvider.initBlogLoad) {
+              return Center(
+                child: customPageLoadingAnimation(
+                  size: getSize(50),
                 ),
-                itemBuilder: (context, index) {
-                  final currentBlog = blogProvider.blogs[index];
-                  return AnimationConfiguration.staggeredList(
-                    position: index,
-                    duration: const Duration(milliseconds: 375),
-                    child: FadeInAnimation(
-                      delay: const Duration(milliseconds: 100),
-                      child: SlideAnimation(
-                        horizontalOffset: -50.0,
-                        delay: const Duration(milliseconds: 60),
-                        child: GestureDetector(
-                          onTap: () {
-                            blogProvider.changeCurrentSelectedBlog(
-                                index: index);
-                            context.pushNamed("blog_details");
-                          },
-                          child: Container(
-                            decoration: AppDecoration.containerBoxDecoration(),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Hero(
-                                  tag: "BlogImage_${currentBlog.id}",
-                                  child: customImageView(
-                                    url: currentBlog.imageUrl,
-                                    imgHeight: getVerticalSize(110),
-                                    imgWidth: getHorizontalSize(100),
+              );
+            } else if (blogProvider.blogs.isEmpty) {
+              return Center(
+                child: customText(
+                  text: "No Blogs Found",
+                  color: AppColor.primaryColor,
+                  fontSize: getFontSize(25),
+                  fontWeight: FontWeight.bold,
+                  maxLines: 3,
+                ),
+              );
+            } else {
+              return AnimationLimiter(
+                child: ListView.separated(
+                  padding: EdgeInsets.all(
+                    getSize(20),
+                  ),
+                  itemBuilder: (context, index) {
+                    final currentBlog = blogProvider.blogs[index];
+                    return AnimationConfiguration.staggeredList(
+                      position: index,
+                      duration: const Duration(milliseconds: 375),
+                      child: FadeInAnimation(
+                        delay: const Duration(milliseconds: 100),
+                        child: SlideAnimation(
+                          horizontalOffset: -50.0,
+                          delay: const Duration(milliseconds: 60),
+                          child: GestureDetector(
+                            onTap: () {
+                              blogProvider.changeCurrentSelectedBlog(
+                                  index: index);
+                              context.pushNamed("blog_details");
+                            },
+                            child: Container(
+                              decoration: AppDecoration.containerBoxDecoration(),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Hero(
+                                    tag: "BlogImage_${currentBlog.id}",
+                                    child: customImageView(
+                                      url: currentBlog.imageUrl,
+                                      imgHeight: getVerticalSize(110),
+                                      imgWidth: getHorizontalSize(100),
+                                    ),
                                   ),
-                                ),
-                                SizedBox(
-                                  width: getHorizontalSize(10),
-                                ),
-                                SizedBox(
-                                  height: getVerticalSize(110),
-                                  width: width - getHorizontalSize(150),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      customText(
-                                        fontSize: getFontSize(23),
-                                        text: currentBlog.title,
-                                        color: AppColor.primaryColor,
-                                        textAlign: TextAlign.start,
-                                        fontWeight: FontWeight.bold,
-                                        maxLines: 2,
-                                      ),
-                                      SizedBox(
-                                        height: getVerticalSize(5),
-                                      ),
-                                      customText(
-                                        text: currentBlog.category,
-                                        color: GrayColor.gray,
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          customText(
-                                            text: formatDate(
-                                                currentBlog.updatedAt),
-                                            color: GrayColor.gray,
-                                          ),
-                                          if (currentUserDetails.id ==
-                                              currentBlog.userId)
-                                            Row(
-                                              children: [
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    context.pushNamed(
-                                                        "add_blog",
-                                                        extra: currentBlog
-                                                            .toJson());
-                                                  },
-                                                  child: const Icon(
-                                                    Icons.edit,
-                                                    color: BlackColor.matte,
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width: getHorizontalSize(5),
-                                                ),
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    blogProvider.deleteBlog(
-                                                        context: context,
-                                                        index: index);
-                                                  },
-                                                  child: const Icon(
-                                                    Icons.delete_rounded,
-                                                    color: RedColor.cardinalRed,
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width: getHorizontalSize(10),
-                                                ),
-                                              ],
+                                  SizedBox(
+                                    width: getHorizontalSize(10),
+                                  ),
+                                  SizedBox(
+                                    height: getVerticalSize(110),
+                                    width: width - getHorizontalSize(150),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        customText(
+                                          fontSize: getFontSize(23),
+                                          text: currentBlog.title,
+                                          color: AppColor.primaryColor,
+                                          textAlign: TextAlign.start,
+                                          fontWeight: FontWeight.bold,
+                                          maxLines: 2,
+                                        ),
+                                        SizedBox(
+                                          height: getVerticalSize(5),
+                                        ),
+                                        customText(
+                                          text: currentBlog.category,
+                                          color: GrayColor.gray,
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            customText(
+                                              text: formatDate(
+                                                  currentBlog.updatedAt),
+                                              color: GrayColor.gray,
                                             ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              ],
+                                            if (currentUserProvider.userId ==
+                                                currentBlog.userId)
+                                              Row(
+                                                children: [
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      context.pushNamed(
+                                                          "add_blog",
+                                                          extra: currentBlog
+                                                              .toJson());
+                                                    },
+                                                    child: const Icon(
+                                                      Icons.edit,
+                                                      color: BlackColor.matte,
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    width: getHorizontalSize(5),
+                                                  ),
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      blogProvider.deleteBlog(
+                                                          context: context,
+                                                          index: index);
+                                                    },
+                                                    child: const Icon(
+                                                      Icons.delete_rounded,
+                                                      color: RedColor.cardinalRed,
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    width: getHorizontalSize(10),
+                                                  ),
+                                                ],
+                                              ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
-                separatorBuilder: (context, index) => SizedBox(
-                  height: getVerticalSize(15),
+                    );
+                  },
+                  separatorBuilder: (context, index) => SizedBox(
+                    height: getVerticalSize(15),
+                  ),
+                  itemCount: blogProvider.blogs.length,
                 ),
-                itemCount: blogProvider.blogs.length,
-              ),
-            );
-          }
-        },
+              );
+            }
+          },
+        ),
       ),
       bottomNavigationBar: const CustomBottomNavigation(),
       floatingActionButton: FloatingActionButton(

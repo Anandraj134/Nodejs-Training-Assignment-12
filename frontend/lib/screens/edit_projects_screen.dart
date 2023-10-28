@@ -240,100 +240,132 @@ Widget editBottomSheet(
       bottom: MediaQuery.of(context).viewInsets.bottom,
     ),
     child: SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          SizedBox(
-            height: getVerticalSize(20),
-          ),
-          Container(
-            decoration: AppDecoration.inputBoxDecorationShadow(),
-            child: TextFormField(
-              style: AppStyle.textFormFieldStyle(),
-              controller: portfolioProvider.titleController,
-              decoration: AppDecoration().textInputDecorationWhite(
-                icon: Icons.title_outlined,
-                lableText: "Title",
-                hintText: "Enter Title Here",
+      child: Form(
+        key: portfolioProvider.projectFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            SizedBox(
+              height: getVerticalSize(20),
+            ),
+            Container(
+              decoration: AppDecoration.inputBoxDecorationShadow(),
+              child: TextFormField(
+                style: AppStyle.textFormFieldStyle(),
+                controller: portfolioProvider.titleController,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return "Title is required";
+                  }
+                  return null;
+                },
+                decoration: AppDecoration().textInputDecorationWhite(
+                  icon: Icons.title_outlined,
+                  lableText: "Title",
+                  hintText: "Enter Title Here",
+                ),
               ),
             ),
-          ),
-          SizedBox(
-            height: getVerticalSize(15),
-          ),
-          Container(
-            decoration: AppDecoration.inputBoxDecorationShadow(),
-            child: TextFormField(
-              style: AppStyle.textFormFieldStyle(),
-              maxLines: null,
-              controller: portfolioProvider.descriptionController,
-              decoration: AppDecoration().textInputDecorationWhite(
-                lableText: "Description",
-                icon: Icons.description_outlined,
-                hintText: "Enter Description Here",
+            SizedBox(
+              height: getVerticalSize(15),
+            ),
+            Container(
+              decoration: AppDecoration.inputBoxDecorationShadow(),
+              child: TextFormField(
+                style: AppStyle.textFormFieldStyle(),
+                maxLines: null,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return "Description is required";
+                  }
+                  return null;
+                },
+                controller: portfolioProvider.descriptionController,
+                decoration: AppDecoration().textInputDecorationWhite(
+                  lableText: "Description",
+                  icon: Icons.description_outlined,
+                  hintText: "Enter Description Here",
+                ),
               ),
             ),
-          ),
-          SizedBox(
-            height: getVerticalSize(15),
-          ),
-          Container(
-            decoration: AppDecoration.inputBoxDecorationShadow(),
-            child: TextFormField(
-              style: AppStyle.textFormFieldStyle(),
-              controller: portfolioProvider.technologyController,
-              decoration: AppDecoration().textInputDecorationWhite(
-                icon: Icons.military_tech_outlined,
-                lableText: "Technologies",
-                hintText: "Enter Used Technologies Here",
+            SizedBox(
+              height: getVerticalSize(15),
+            ),
+            Container(
+              decoration: AppDecoration.inputBoxDecorationShadow(),
+              child: TextFormField(
+                style: AppStyle.textFormFieldStyle(),
+                controller: portfolioProvider.technologyController,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return "Technologies is required";
+                  }
+                  return null;
+                },
+                decoration: AppDecoration().textInputDecorationWhite(
+                  icon: Icons.military_tech_outlined,
+                  lableText: "Technologies",
+                  hintText: "Enter Used Technologies Here",
+                ),
               ),
             ),
-          ),
-          SizedBox(
-            height: getVerticalSize(15),
-          ),
-          Container(
-            decoration: AppDecoration.inputBoxDecorationShadow(),
-            child: TextFormField(
-              style: AppStyle.textFormFieldStyle(),
-              controller: portfolioProvider.githubController,
-              decoration: AppDecoration().textInputDecorationWhite(
-                lableText: "Github Repository Link",
-                icon: Icons.link_rounded,
-                hintText: "Enter Github Repository Link Here",
+            SizedBox(
+              height: getVerticalSize(15),
+            ),
+            Container(
+              decoration: AppDecoration.inputBoxDecorationShadow(),
+              child: TextFormField(
+                style: AppStyle.textFormFieldStyle(),
+                controller: portfolioProvider.githubController,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return "Github Repository Link is required";
+                  }
+                  return null;
+                },
+                decoration: AppDecoration().textInputDecorationWhite(
+                  lableText: "Github Repository Link",
+                  icon: Icons.link_rounded,
+                  hintText: "Enter Github Repository Link Here",
+                ),
               ),
             ),
-          ),
-          SizedBox(
-            height: getVerticalSize(20),
-          ),
-          GestureDetector(
-            onTap: () {
-              portfolioProvider.editPortfolio(
-                  context: context, isEdit: isEdit, id: id);
-            },
-            child: Container(
-              height: getVerticalSize(50),
-              decoration: AppDecoration.buttonBoxDecoration(),
-              child: Center(
-                child: portfolioProvider.isPortfolioUpdating
-                    ? customButtonLoadingAnimation(
-                        size: 50,
-                      )
-                    : customText(
-                        text: "Submit",
-                        color: WhiteColor.white,
-                        fontWeight: FontWeight.w500,
-                        fontSize: getFontSize(23),
-                      ),
+            SizedBox(
+              height: getVerticalSize(20),
+            ),
+            GestureDetector(
+              onTap: () {
+                if (portfolioProvider.projectFormKey.currentState!.validate()) {
+                  if (isEdit) {
+                    portfolioProvider.editProject(context: context, id: id);
+                  } else {
+                    portfolioProvider.addProject(context: context);
+                  }
+                }
+              },
+              child: Container(
+                height: getVerticalSize(50),
+                decoration: AppDecoration.buttonBoxDecoration(),
+                child: Center(
+                  child: portfolioProvider.isPortfolioUpdating
+                      ? customButtonLoadingAnimation(
+                          size: 50,
+                        )
+                      : customText(
+                          text: "Submit",
+                          color: WhiteColor.white,
+                          fontWeight: FontWeight.w500,
+                          fontSize: getFontSize(23),
+                        ),
+                ),
               ),
             ),
-          ),
-          SizedBox(
-            height: getVerticalSize(20),
-          ),
-        ],
+            SizedBox(
+              height: getVerticalSize(20),
+            ),
+          ],
+        ),
       ),
     ),
   );

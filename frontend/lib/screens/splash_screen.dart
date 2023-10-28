@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:assignment_12/core/app_export.dart';
-import 'package:assignment_12/providers/blog_provider.dart';
 import 'package:assignment_12/providers/user_provider.dart';
 import 'package:lottie/lottie.dart';
 
@@ -38,7 +37,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   void getInitData() async {
     authToken = await readStorage(storageAuthToken) ?? "";
-    currentUserDetails.id = int.parse(await readStorage(storageUserId) ?? "-1");
+    int userId = int.parse(await readStorage(storageUserId) ?? "-1");
+    Provider.of<UserProfileProvider>(context, listen: false).setUserId(userId);
     if (authToken.isNotEmpty) {
       Provider.of<UserProvider>(context, listen: false)
           .fetchUser(context: context);
@@ -46,6 +46,12 @@ class _SplashScreenState extends State<SplashScreen>
     } else {
       routeName = "login";
     }
+  }
+
+  @override
+  void dispose() {
+    animation.dispose();
+    super.dispose();
   }
 
   @override
